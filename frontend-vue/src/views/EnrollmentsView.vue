@@ -1,8 +1,16 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useCourseStore } from '@/stores/course'
+import StatusMessage from '@/components/StatusMessage.vue'
 
 const enrollmentStudentId = ref('')
 const enrollmentCourseId = ref('')
+
+const students = ref([])
+
+const courseStore = useCourseStore()
+const { courses } = storeToRefs(courseStore)
 
 const viewCourseId = ref('')
 const enrolledStudents = ref([])
@@ -12,6 +20,33 @@ const enrollmentError = ref('')
 
 const removeMessage = ref('')
 const removeError = ref('')
+
+
+async function loadStudents() {
+  try {
+    const response = await fetch('http://localhost:3000/api/students')
+    const data = await response.json()
+
+    if (!response.ok) {
+      enrollmentError.value = data.error || 'Unable to load students'
+      return
+    }
+
+    students.value = data
+  } catch (error) {
+    enrollmentError.value = 'Unable to connect to the server'
+  }
+}
+
+onMounted(async () => {
+  try {
+    await courseStore.loadCourses()
+  } catch (error) {
+    enrollmentError.value = error.message
+  }
+
+  loadStudents()
+})
 
 async function enrollStudent() {
   enrollmentMessage.value = ''
@@ -114,38 +149,41 @@ async function removeEnrollment(studentId) {
       <h3>Enroll Student</h3>
 
       <form @submit.prevent="enrollStudent">
-        <div class="form-group">
-          <label>Student ID</label>
-          <input
-            v-model="enrollmentStudentId"
-            type="text"
-            placeholder="Enter student ID"
-            required
-          />
-        </div>
+   <div class="form-group">
+  <label>Student</label>
+  <select v-model="enrollmentStudentId" required>
+    <option value="" disabled>Select a student</option>
+    <option
+      v-for="student in students"
+      :key="student._id"
+      :value="student.studentId"
+    >
+      {{ student.name }} - {{ student.studentId }}
+    </option>
+  </select>
+</div>
 
         <div class="form-group">
-          <label>Course ID</label>
-          <input
-            v-model="enrollmentCourseId"
-            type="text"
-            placeholder="Enter course ID"
-            required
-          />
-        </div>
+  <label>Course</label>
+  <select v-model="enrollmentCourseId" required>
+    <option value="" disabled>Select a course</option>
+    <option
+      v-for="course in courses"
+      :key="course._id"
+      :value="course.courseId"
+    >
+      {{ course.courseId }} - {{ course.courseName }}
+    </option>
+  </select>
+</div>
 
         <button class="primary-button" type="submit">
           Enroll Student
         </button>
       </form>
 
-      <p v-if="enrollmentMessage" class="success-message">
-        {{ enrollmentMessage }}
-      </p>
-
-      <p v-if="enrollmentError" class="error-message">
-        {{ enrollmentError }}
-      </p>
+      <StatusMessage :message="enrollmentMessage" />
+<StatusMessage :message="enrollmentError" type="error" />
     </div>
 
     <!-- View Students by Course -->
@@ -153,13 +191,18 @@ async function removeEnrollment(studentId) {
       <h3>View Students by Course</h3>
 
       <div class="form-group">
-        <label>Course ID</label>
-        <input
-          v-model="viewCourseId"
-          type="text"
-          placeholder="Example: CIS 3339"
-        />
-      </div>
+  <label>Course</label>
+  <select v-model="viewCourseId">
+    <option value="" disabled>Select a course</option>
+    <option
+      v-for="course in courses"
+      :key="course._id"
+      :value="course.courseId"
+    >
+      {{ course.courseId }} - {{ course.courseName }}
+    </option>
+  </select>
+</div>
 
       <button
         class="primary-button"
@@ -169,13 +212,8 @@ async function removeEnrollment(studentId) {
         Load Students
       </button>
 
-      <p v-if="removeMessage" class="success-message">
-        {{ removeMessage }}
-      </p>
-
-      <p v-if="removeError" class="error-message">
-        {{ removeError }}
-      </p>
+      <StatusMessage :message="removeMessage" />
+<StatusMessage :message="removeError" type="error" />
 
       <div
         v-for="student in enrolledStudents"

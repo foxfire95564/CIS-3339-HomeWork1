@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 require('dotenv').config();
 
 const Student = require('./models/Student');
@@ -10,6 +11,9 @@ const Enrollment = require('./models/Enrollment');
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const frontendPath = path.join(__dirname, '../frontend-vue/dist');
+app.use(express.static(frontendPath));
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
@@ -43,6 +47,19 @@ app.post('/find-student', async (req, res) => {
         res.send(student);
     } catch (error) {
         console.error('Error finding student:', error);
+        res.status(500).send({
+            error: 'Internal server error'
+        });
+    }
+});
+
+// Endpoint to get all students
+app.get('/api/students', async (req, res) => {
+    try {
+        const students = await Student.find().sort({ studentId: 1 });
+        res.send(students);
+    } catch (error) {
+        console.error('Error loading students:', error);
         res.status(500).send({
             error: 'Internal server error'
         });
@@ -160,7 +177,7 @@ app.post('/add-course', async (req, res) => {
 });
 
 // Endpoint to list all courses
-app.get('/courses', async (req, res) => {
+app.get('/api/courses', async (req, res) => {
     try {
         const courses = await Course.find().sort({ courseId: 1 });
         res.send(courses);
@@ -325,6 +342,11 @@ app.delete('/enrollments', async (req, res) => {
             error: 'Internal server error'
         });
     }
+});
+
+// Serve the Vue application for client-side routes
+app.get('/{*splat}', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 // Start the server

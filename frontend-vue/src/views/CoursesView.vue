@@ -1,9 +1,14 @@
 <script setup>
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useCourseStore } from '@/stores/course'
+import StatusMessage from '@/components/StatusMessage.vue'
 
 const courseId = ref('')
 const courseName = ref('')
-const courses = ref([])
+
+const courseStore = useCourseStore()
+const { courses } = storeToRefs(courseStore)
 
 const courseMessage = ref('')
 const courseError = ref('')
@@ -46,18 +51,9 @@ async function loadCourses() {
   courseError.value = ''
 
   try {
-    const response = await fetch('http://localhost:3000/courses')
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      courseError.value = data.error || 'Unable to load courses'
-      return
-    }
-
-    courses.value = data
+    await courseStore.loadCourses()
   } catch (error) {
-    courseError.value = 'Unable to connect to the server'
+    courseError.value = error.message
   }
 }
 
@@ -124,13 +120,8 @@ async function deleteCourse(courseId) {
         </button>
       </form>
 
-      <p v-if="courseMessage" class="success-message">
-        {{ courseMessage }}
-      </p>
-
-      <p v-if="courseError" class="error-message">
-        {{ courseError }}
-      </p>
+      <StatusMessage :message="courseMessage" />
+<StatusMessage :message="courseError" type="error" />
     </div>
 
     <div class="form-card">

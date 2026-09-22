@@ -417,7 +417,8 @@ async function removeEnrollment(studentId) {
   font-weight: bold;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   width: 100%;
   box-sizing: border-box;
   padding: 10px;

@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import StatusMessage from '@/components/StatusMessage.vue'
 
 // Student form
 const studentName = ref('')
@@ -84,6 +85,41 @@ async function findStudent() {
     studentError.value = 'Unable to connect to the server'
   }
 }
+
+async function deleteStudent() {
+  studentMessage.value = ''
+  studentError.value = ''
+  foundStudent.value = null
+
+  if (!searchName.value) {
+    studentError.value = 'Please enter a student name'
+    return
+  }
+
+  try {
+    const response = await fetch('http://localhost:3000/delete-student', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: searchName.value
+      })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      studentError.value = data.error || 'Unable to delete student'
+      return
+    }
+
+    studentMessage.value = data.message
+    searchName.value = ''
+  } catch (error) {
+    studentError.value = 'Unable to connect to the server'
+  }
+}
 </script>
 
 <template>
@@ -140,13 +176,8 @@ async function findStudent() {
         </button>
       </form>
 
-      <p v-if="studentMessage" class="success-message">
-        {{ studentMessage }}
-      </p>
-
-      <p v-if="studentError" class="error-message">
-        {{ studentError }}
-      </p>
+      <StatusMessage :message="studentMessage" />
+<StatusMessage :message="studentError" type="error" />
     </div>
 
     <div class="form-card">

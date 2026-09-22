@@ -1,5 +1,94 @@
 # CIS 3339 Homework 1: Vue 3 and MongoDB Migration
 
+## Completed Application Setup
+
+### Required Software
+
+- Node.js and npm
+- MongoDB Community Edition running locally
+- A modern web browser
+
+### Environment Configuration
+
+The backend uses the submitted `backend/.env` file:
+
+```env
+MONGODB_URI=mongodb://127.0.0.1:27017/cis3339_homework1
+PORT=3000
+```
+
+MongoDB Community Edition must be running locally before starting the application. No manual database creation, migration, seeding, or import is required.
+
+### Install Dependencies
+
+Install the backend dependencies:
+
+```bash
+cd backend
+npm install
+```
+
+Install the Vue frontend dependencies:
+
+```bash
+cd frontend-vue
+npm install
+```
+
+### Build the Vue Frontend
+
+From the `frontend-vue` directory, run:
+
+```bash
+npm run build
+```
+
+This generates the production Vue files in `frontend-vue/dist`.
+
+### Start the Production Application
+
+Make sure the local MongoDB Community Edition service is running. On Windows, MongoDB may run automatically as a Windows service depending on the installation configuration.
+
+Then start the Express server from the `backend` directory:
+
+```bash
+cd backend
+node server.js
+```
+
+Express connects to MongoDB and serves the production Vue build.
+
+### Open the Application
+
+Open the application at:
+
+`http://localhost:3000`
+
+Main Vue Router views:
+
+- Students: `http://localhost:3000/students`
+- Courses: `http://localhost:3000/courses`
+- Enrollments: `http://localhost:3000/enrollments`
+
+The routed pages can be opened directly or refreshed without returning a 404 error.
+
+### Completed Application Features
+
+- Vue 3 Composition API frontend
+- Vue Router navigation
+- Pinia shared course state
+- Reusable Vue components
+- Student add, search, display, and delete functionality
+- Course add, list, and delete functionality
+- Backend-populated student and course enrollment selections
+- Enrollment creation, course-roster display, and enrollment removal
+- MongoDB persistence using Mongoose
+- Duplicate student, course, and enrollment prevention
+- Cascading enrollment deletion when a student or course is deleted
+- Express production hosting of the built Vue application
+
+---
+
 ## Assignment Overview
 
 In this assignment, you will migrate the provided Student Management System into a modern full-stack enterprise application.
