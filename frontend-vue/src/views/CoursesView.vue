@@ -12,6 +12,7 @@ const { courses } = storeToRefs(courseStore)
 
 const courseMessage = ref('')
 const courseError = ref('')
+const isLoading = ref(false)
 
 async function addCourse() {
   courseMessage.value = ''
@@ -49,11 +50,14 @@ async function addCourse() {
 
 async function loadCourses() {
   courseError.value = ''
+  isLoading.value = true
 
   try {
     await courseStore.loadCourses()
   } catch (error) {
     courseError.value = error.message
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -83,7 +87,6 @@ async function deleteCourse(courseId) {
     courseError.value = 'Unable to connect to the server'
   }
 }
-
 </script>
 
 <template>
@@ -96,8 +99,9 @@ async function deleteCourse(courseId) {
 
       <form @submit.prevent="addCourse">
         <div class="form-group">
-          <label>Course ID</label>
+          <label for="course-id">Course ID</label>
           <input
+            id="course-id"
             v-model="courseId"
             type="text"
             placeholder="Enter course ID"
@@ -106,8 +110,9 @@ async function deleteCourse(courseId) {
         </div>
 
         <div class="form-group">
-          <label>Course Name</label>
+          <label for="course-name">Course Name</label>
           <input
+            id="course-name"
             v-model="courseName"
             type="text"
             placeholder="Enter course name"
@@ -121,7 +126,7 @@ async function deleteCourse(courseId) {
       </form>
 
       <StatusMessage :message="courseMessage" />
-<StatusMessage :message="courseError" type="error" />
+      <StatusMessage :message="courseError" type="error" />
     </div>
 
     <div class="form-card">
@@ -135,7 +140,14 @@ async function deleteCourse(courseId) {
         Load Courses
       </button>
 
-      <p v-if="courses.length === 0" class="empty-message">
+      <p v-if="isLoading" class="empty-message">
+        Loading courses...
+      </p>
+
+      <p
+        v-if="!isLoading && courses.length === 0"
+        class="empty-message"
+      >
         No courses loaded.
       </p>
 

@@ -15,10 +15,12 @@ const foundStudent = ref(null)
 // Student messages
 const studentMessage = ref('')
 const studentError = ref('')
+const isLoading = ref(false)
 
 async function addStudent() {
   studentMessage.value = ''
   studentError.value = ''
+  isLoading.value = true
 
   try {
     const response = await fetch('http://localhost:3000/add-student', {
@@ -49,6 +51,8 @@ async function addStudent() {
     studentZip.value = ''
   } catch (error) {
     studentError.value = 'Unable to connect to the server'
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -61,6 +65,8 @@ async function findStudent() {
     studentError.value = 'Please enter a student name'
     return
   }
+
+  isLoading.value = true
 
   try {
     const response = await fetch('http://localhost:3000/find-student', {
@@ -81,8 +87,10 @@ async function findStudent() {
     }
 
     foundStudent.value = data
-    } catch (error) {
+  } catch (error) {
     studentError.value = 'Unable to connect to the server'
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -95,6 +103,8 @@ async function deleteStudent() {
     studentError.value = 'Please enter a student name'
     return
   }
+
+  isLoading.value = true
 
   try {
     const response = await fetch('http://localhost:3000/delete-student', {
@@ -118,6 +128,8 @@ async function deleteStudent() {
     searchName.value = ''
   } catch (error) {
     studentError.value = 'Unable to connect to the server'
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
@@ -132,8 +144,9 @@ async function deleteStudent() {
 
       <form @submit.prevent="addStudent">
         <div class="form-group">
-          <label>Name</label>
+          <label for="student-name">Name</label>
           <input
+            id="student-name"
             v-model="studentName"
             type="text"
             placeholder="Enter student name"
@@ -142,8 +155,9 @@ async function deleteStudent() {
         </div>
 
         <div class="form-group">
-          <label>Student ID</label>
+          <label for="student-id">Student ID</label>
           <input
+            id="student-id"
             v-model="studentId"
             type="text"
             placeholder="Enter student ID"
@@ -152,8 +166,9 @@ async function deleteStudent() {
         </div>
 
         <div class="form-group">
-          <label>Phone</label>
+          <label for="student-phone">Phone</label>
           <input
+            id="student-phone"
             v-model="studentPhone"
             type="text"
             placeholder="Enter phone number"
@@ -162,8 +177,9 @@ async function deleteStudent() {
         </div>
 
         <div class="form-group">
-          <label>ZIP Code</label>
+          <label for="student-zip">ZIP Code</label>
           <input
+            id="student-zip"
             v-model="studentZip"
             type="text"
             placeholder="Enter ZIP code"
@@ -171,21 +187,30 @@ async function deleteStudent() {
           />
         </div>
 
-        <button class="primary-button" type="submit">
+        <button
+          class="primary-button"
+          type="submit"
+          :disabled="isLoading"
+        >
           Add Student
         </button>
       </form>
 
+      <p v-if="isLoading" class="empty-message">
+        Processing...
+      </p>
+
       <StatusMessage :message="studentMessage" />
-<StatusMessage :message="studentError" type="error" />
+      <StatusMessage :message="studentError" type="error" />
     </div>
 
     <div class="form-card">
       <h3>Find / Delete Student</h3>
 
       <div class="form-group">
-        <label>Student Name</label>
+        <label for="search-student-name">Student Name</label>
         <input
+          id="search-student-name"
           v-model="searchName"
           type="text"
           placeholder="Enter student name"
@@ -195,6 +220,7 @@ async function deleteStudent() {
       <button
         class="primary-button"
         type="button"
+        :disabled="isLoading"
         @click="findStudent"
       >
         Find Student
@@ -203,6 +229,7 @@ async function deleteStudent() {
       <button
         class="delete-button"
         type="button"
+        :disabled="isLoading"
         @click="deleteStudent"
       >
         Delete Student
